@@ -1,0 +1,31 @@
+// Demo repository: replace these two methods with BE calls when the API is ready.
+const DEMO_WISHES=[
+['Linh','Mong mẹ thật khỏe, để mùa nào mình cũng còn được về nhà.','gia-dinh'],
+['Minh Anh','Một tiệm sách nhỏ, có cửa sổ đầy nắng và một chú mèo nằm ngủ.','uoc-mo'],
+['','Mong mình đủ can đảm bắt đầu lại, dù muộn hơn mọi người một chút.','ban-than'],
+['Hoàng','Đưa ba mẹ đi ngắm biển lần đầu tiên.','gia-dinh'],
+['Mây','Có một ngày thức dậy, lòng nhẹ tênh và không còn sợ ngày mai.','ban-than'],
+['An','Được làm công việc mình yêu, cùng những người tử tế.','uoc-mo'],
+['Nắng','Mong những người đang xa nhau sẽ sớm được gặp lại.','yeu-thuong'],
+['Tuấn','Chạy được một cuộc marathon trước tuổi ba mươi.','uoc-mo'],
+['','Mong em bé của chúng mình lớn lên bình an.','gia-dinh'],
+['Hạ','Một chuyến tàu lên Đà Lạt. Một cuốn sổ. Không vội đi đâu cả.','uoc-mo'],
+['Bình','Năm tới, mình muốn tự tin nói rằng: mình đã cố gắng hết lòng.','ban-than'],
+['Cá','Mong có một căn nhà nhỏ, ban công trồng đầy cây.','uoc-mo'],
+['Hương','Học cách thương mình như cách mình luôn thương người khác.','ban-than'],
+['Khang','Giành được học bổng, rồi trở về giúp những đứa trẻ ở quê.','uoc-mo'],
+['Trăng','Mong người đang đọc điều này sẽ có một ngày thật dịu dàng.','yeu-thuong'],
+['','Được nắm tay đúng một người, đi qua những năm tháng bình thường.','yeu-thuong']
+].map(([name,text,topic],i)=>({id:'demo-'+i,name,text,topic,date:new Date(2026,9,30-i%7).toISOString(),demo:true}));
+const WishRepository={list(){return [...wishes.filter(w=>w.public&&w.sync==='demo').map(w=>({...w,topic:'cua-ban',mine:true})).reverse(),...DEMO_WISHES]},share(wish){wish.sync='demo';save();return wish}};
+let communityWishes=[],publicSelected=null,communityFilter='all',communityView='sky';
+function publishWish(wish){WishRepository.share(wish);$('#status').textContent='Đã thêm ước mơ vào Bầu trời chung của bản demo.';setTimeout(()=>{if(pendingWish?.id===wish.id&&scene==='arrived')$('#storage-note').textContent='Đã thêm vào Bầu trời chung bản demo · chỉ lưu trên trình duyệt này.'},0)}
+function publicDetail(w){publicSelected=w;$('#public-text').textContent=w.text;$('#public-author').textContent=w.name||'Một người vô danh';$('#public-date').textContent=new Date(w.date).toLocaleDateString('vi-VN',{day:'numeric',month:'long',year:'numeric'});$('#bless-status').textContent='';$('#bless').disabled=false;$('#public-wish').classList.remove('blessed');$('#public-wish').showModal()}
+function renderCommunity(){const all=WishRepository.list();communityWishes=all.filter(w=>communityFilter==='all'||w.topic===communityFilter);$('#community-count').textContent=communityWishes.length+' ánh đèn · '+(communityFilter==='cua-ban'?'ước mơ của bạn':'bản trải nghiệm');$('#community-field').replaceChildren();$('#community-list').replaceChildren();$('#community-empty').hidden=!!communityWishes.length;$('#community-status').textContent='Dữ liệu mẫu · Ước mơ bạn chia sẻ chỉ xuất hiện trên trình duyệt này.';communityWishes.forEach((w,i)=>{const light=document.createElement('button');light.className='community-lantern'+(w.mine?' mine':'');light.style.cssText='--x:'+(7+(i*37)%86)+'%;--y:'+(5+(i*19)%65)+'%;--size:'+(.64+(i%5)*.14)+';--delay:'+(-i*.7)+'s';light.setAttribute('aria-label','Đọc ước mơ của '+(w.name||'một người vô danh'));const lantern=document.createElement('span');lantern.className='tiny-lantern';const label=document.createElement('span');label.className='tiny-author';label.textContent=w.mine?'Đèn của bạn':w.name||'Vô danh';light.append(lantern,label);light.onclick=()=>publicDetail(w);if(i<36)$('#community-field').append(light);const card=document.createElement('button');card.className='community-card';const icon=document.createElement('span');icon.textContent='✧';const text=document.createElement('p');text.textContent=w.text;const author=document.createElement('small');author.textContent=(w.name||'Một người vô danh')+' · '+(w.mine?'Đèn của bạn':'Ước mơ mẫu');card.append(icon,text,author);card.onclick=()=>publicDetail(w);$('#community-list').append(card)});$('#community-field').hidden=communityView!=='sky';$('#community-list').hidden=communityView!=='letters'}
+function openCommunity(){if(scene!=='closed')closeCeremony(committed);$('#community').hidden=false;document.body.classList.add('in-community');for(const el of document.querySelectorAll('body > header,body > main,body > footer'))el.inert=true;renderCommunity();$('#community-close').focus()}
+function closeCommunity(){if($('#public-wish').open)$('#public-wish').close();$('#community').hidden=true;document.body.classList.remove('in-community');for(const el of document.querySelectorAll('body > header,body > main,body > footer'))el.inert=false;$('#community-open').focus()}
+$('#community-open').onclick=openCommunity;$('#community-close').onclick=closeCommunity;$('#community-write').onclick=()=>{closeCommunity();$('#wish').focus()};$('#community-refresh').onclick=renderCommunity;$('#public-close').onclick=()=>$('#public-wish').close();$('#bless').onclick=()=>{if(!publicSelected)return;$('#bless').disabled=true;$('#bless-status').textContent='Một chút ánh sáng, dành cho điều bạn đang mong. ✦';$('#public-wish').classList.add('blessed');chime()};
+for(const button of document.querySelectorAll('[data-wish-filter]'))button.onclick=()=>{communityFilter=button.dataset.wishFilter;for(const b of document.querySelectorAll('[data-wish-filter]'))b.setAttribute('aria-pressed',String(b===button));renderCommunity()};
+for(const button of document.querySelectorAll('[data-community-view]'))button.onclick=()=>{communityView=button.dataset.communityView;for(const b of document.querySelectorAll('[data-community-view]'))b.setAttribute('aria-pressed',String(b===button));renderCommunity()};
+document.addEventListener('keydown',e=>{if($('#community').hidden)return;if(e.key==='Escape'&&!$('#public-wish').open)closeCommunity();if(e.key==='Tab'&&!$('#public-wish').open){const buttons=[...$('#community').querySelectorAll('button,a')].filter(el=>el.getClientRects().length),first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
+$('#arrival-community').onclick=openCommunity;
