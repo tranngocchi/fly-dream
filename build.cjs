@@ -1,1 +1,10 @@
-const {buildSync}=require('esbuild');buildSync({entryPoints:['lake-scene.mjs'],bundle:true,format:'iife',globalName:'DreamLake',outfile:'lake.bundle.js',target:['chrome100','safari16'],minify:true,legalComments:'eof'});console.log('Built lake.bundle.js');
+const fs=require('node:fs');
+const path=require('node:path');
+const {buildSync}=require('esbuild');
+const root=__dirname;
+const assets=['index.html','style.css','app.js','reply.js','prayer.js','sky-effects.js','effects.js','lake.bundle.js'];
+buildSync({absWorkingDir:root,entryPoints:['lake-scene.mjs'],bundle:true,format:'iife',globalName:'DreamLake',outfile:'lake.bundle.js',target:['chrome100','safari16'],minify:true,legalComments:'eof'});
+const output=path.join(root,'dist');
+fs.mkdirSync(output,{recursive:true});
+for(const asset of assets)fs.copyFileSync(path.join(root,asset),path.join(output,asset));
+console.log('Built dist/: '+assets.length+' static web assets.');
