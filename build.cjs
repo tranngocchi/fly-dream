@@ -1,0 +1,1 @@
+const {buildSync}=require('esbuild');buildSync({entryPoints:['lake-scene.mjs'],bundle:true,format:'iife',globalName:'DreamLake',outfile:'lake.bundle.js',target:['chrome100','safari16'],minify:true,legalComments:'eof'});console.log('Built lake.bundle.js');
